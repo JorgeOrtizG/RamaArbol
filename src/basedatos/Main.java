@@ -19,29 +19,33 @@ public class Main {
 			Statement st=AccesoDB.getConnection().createStatement();
 				int nivelBase;
 			
+			
+			//Inicializacion de listas auxiliares 
 			ArrayList<Nodo> listaNodos=new ArrayList<>();
-			ArrayList<Nodo> idNodoBuscar=new ArrayList<>();
-			Nodo nodoPadreDeTodos=new Nodo();
-			nodoPadreDeTodos.nodoId=733;
-			idNodoBuscar.add(nodoPadreDeTodos);
+			ArrayList<Nodo> idNodoBuscar=new ArrayList<>();  // lista con los nodos a los cuales se les buscara sus nodos padres e hijos 
+			//Inicializacion de un objeto nodo con informacion del nodo del cual  deseamos obtener
+			// su rama , seteado en duro 
+			Nodo nodoPadreDeTodos=new Nodo();               
+			nodoPadreDeTodos.nodoId=733;                    
+			idNodoBuscar.add(nodoPadreDeTodos);            
 			int nivel=0;
-			ArrayList<NodoSimple> contenedorNodos=getContenedorNodos(st);
+			ArrayList<NodoSimple> contenedorNodos=getContenedorNodos(st); 
 
 			
 			
 			
 			
-			//BuscarPadres
-			
-			//idNodoBuscar.add(nodoPadreDeTodos);
-			
+			//Segmento de código que me permite obtener todos los  nodos padres de un nodo
+						
 			while(idNodoBuscar.size()>0){
 				nivel=nivel-1;
 				ArrayList<Nodo> auxBusqueda=new ArrayList<>();
 
-				for (Nodo idBuscar : idNodoBuscar) {
+				for (Nodo idBuscar : idNodoBuscar) {   // Se itera sobre la lista de nodos a buscar
 					Nodo nodoPadre=idBuscar;
-					ArrayList<NodoSimple> hijosPadre=buscarPadresNodo(nodoPadre.nodoId, contenedorNodos);
+					// se obtiene las reglas de asociación del nodo  iterado 
+					ArrayList<NodoSimple> hijosPadre=buscarPadresNodo(nodoPadre.nodoId, contenedorNodos); nodo a   
+					//Se convierte esas reglas de asociacion en un objeto nodo simple y se agrega al listado de nodos padres
 					for (NodoSimple nodoSimple : hijosPadre) {
 						Nodo nodo=new Nodo();
 						nodo.nodoId=nodoSimple.nodoSi;
@@ -54,23 +58,26 @@ public class Main {
 					
 				}
 				
-				idNodoBuscar=auxBusqueda;
+				idNodoBuscar=auxBusqueda;   // se inicializa el listado de nodos a buscar con nuevos nodos
 			
 				}
 			
-			//Buscar hijos
 			
+			//se calcula el nivel del nodo al cual estamos buscando sus ramas
 			nivel=-1*nivel;
 			nivelBase=nivel;
 			idNodoBuscar.add(nodoPadreDeTodos);
 			
+			//Buscar hijos
 			while(idNodoBuscar.size()>0){
 				nivel=nivel+1;
 				ArrayList<Nodo> auxBusqueda=new ArrayList<>();
 
-				for (Nodo idBuscar : idNodoBuscar) {
+				for (Nodo idBuscar : idNodoBuscar) { // Se itera sobre la lista de nodos a buscar
 					Nodo nodoPadre=idBuscar;
+					// se obtiene las reglas de asociación del nodo  iterado 
 					ArrayList<NodoSimple> hijosPadre=buscarHijosNodo(nodoPadre.nodoId, contenedorNodos);
+					//Se convierte esas reglas de asociacion en un objeto nodo simple y se agrega al listado de nodos padres
 					for (NodoSimple nodoSimple : hijosPadre) {
 						Nodo nodo=new Nodo();
 						nodo.nodoId=nodoSimple.nodoEntonces;
@@ -82,14 +89,16 @@ public class Main {
 					}
 					
 				}
-				
-				idNodoBuscar=auxBusqueda;
+				 
+				idNodoBuscar=auxBusqueda;       //se inicializa el listado de nodos a buscar
 			
 				}
-			nodoPadreDeTodos.nivel=nivelBase;
-			nodoPadreDeTodos.estabilizarNivelPadres(nivelBase);
 			
-			System.out.println(nodoPadreDeTodos);
+			
+			nodoPadreDeTodos.nivel=nivelBase;
+			nodoPadreDeTodos.estabilizarNivelPadres(nivelBase);  
+			
+			System.out.println(nodoPadreDeTodos); //se imprime el resultado
 		
 		
 		} catch (SQLException | ClassNotFoundException e) {
@@ -99,6 +108,12 @@ public class Main {
 
 	}
 	
+	
+	
+	
+	/*
+	Método que permite obtener el id del nodo que es padre de todos los nodos
+	*/
 	public static Integer getNodoPadreTodos() throws ClassNotFoundException, SQLException{
 		Statement st=AccesoDB.getConnection().createStatement();
 		ResultSet resultSet=st.executeQuery("select nodosi from regla where !(idnodosi in (select idnodoentonces from regla)) and iddiagrama28");
@@ -113,6 +128,12 @@ public class Main {
 	
 	
 	
+	/*
+	*Método que realiza la busqueda en la base de datos para obtener todas las reglas de 
+	asociación de un par nodo padre, nodo hijo
+	*@param st ;para poder buscar en la base de datos
+	*@return lista del objeto de NodoSimple
+	*/
 	public static ArrayList<NodoSimple>  getContenedorNodos(Statement st) throws SQLException{
 		ArrayList<NodoSimple> listaNodoSimples=new ArrayList<>();
 		ResultSet resultSet=st.executeQuery("select n.idnodo,r.condicion , "
@@ -136,6 +157,14 @@ public class Main {
 	}
 	
 	
+	
+	/*
+	*Método que permite obtener los nodos que se encuentran un nivel más abajo de un nodo dado,  es decir
+	nos permite obtener los nodos hijos de un nodo
+	*@param idNodo ,id del nodo del cual deseamos obtener 
+	*@param listaContenedora , lista contenedoras de nodos  en la cual se hara la busqueda
+	*@return lista de nodos con los nodos hijos del nodo dado
+	*/
 	public static ArrayList<NodoSimple> buscarHijosNodo(int idNodo,ArrayList<NodoSimple> listaContenedora){
 		ArrayList<NodoSimple> listaNodo=new ArrayList<>();
 		for (int i = 0; i < listaContenedora.size(); i++) {
@@ -151,6 +180,14 @@ public class Main {
 	}
 	
 	
+	
+	/*
+	*Método que permite obtenre los nodos que se encuentran un nivel más arriba de un nodo dado,  es decir
+	nos permite obtener los nodos padres de un nodo
+	*@param idNodo ,id del nodo del cual deseamos obtener 
+	*@param listaContenedora , lista contenedoras de nodos  en la cual se hara la busquera
+	*@return lista de nodos con los nodos padres del nodo dado
+	*/
 	public static ArrayList<NodoSimple> buscarPadresNodo(int idNodo,ArrayList<NodoSimple> listaContenedora){
 		ArrayList<NodoSimple> listaNodo=new ArrayList<>();
 		for (int i = 0; i < listaContenedora.size(); i++) {
