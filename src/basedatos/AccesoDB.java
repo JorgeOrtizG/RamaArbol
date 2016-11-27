@@ -3,6 +3,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+//Clase de acceso a la base de datos
 public class AccesoDB {
 
     static Connection cn = null;
